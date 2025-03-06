@@ -1,9 +1,17 @@
+// src/main.tsx
+import './index.css';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { WagmiConfig, createConfig } from 'wagmi';
 import { createPublicClient, http } from 'viem';
 import { createWeb3Modal } from '@web3modal/wagmi';
 import App from './App';
+
+// Import do React Query
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+// 1) Crie um queryClient
+const queryClient = new QueryClient();
 
 const localChain = {
   id: 31337,
@@ -14,17 +22,14 @@ const localChain = {
   testnet: true,
 };
 
-// Crie o client
 const client = createPublicClient({
   chain: localChain,
   transport: http(),
 });
 
-// Ajuste createConfig p/ usar client function ou client object, dependendo da doc
 const wagmiConfig = createConfig({
   chains: [localChain],
-  client: () => client, // se a doc exigir que "client" seja uma função
-  // ou apenas: client,
+  client: () => client,
 });
 
 const { open } = createWeb3Modal({
@@ -34,8 +39,12 @@ const { open } = createWeb3Modal({
 
 const rootEl = document.getElementById('root')!;
 const root = ReactDOM.createRoot(rootEl);
+
+// 2) Envolver no QueryClientProvider + WagmiConfig
 root.render(
-  <WagmiConfig config={wagmiConfig}>
-    <App openModal={open} />
-  </WagmiConfig>
+  <QueryClientProvider client={queryClient}>
+    <WagmiConfig config={wagmiConfig}>
+      <App openModal={open} />
+    </WagmiConfig>
+  </QueryClientProvider>
 );
